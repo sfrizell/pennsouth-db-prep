@@ -9,9 +9,9 @@ Flow of data:
 
 (2) Run the script 'setup_db_for_pennsouth_aweber_nightly_run.sh' to:
 
-	* (a) copy the mds_export.csv from the source location noted above to the pennsouth_db_prep/data directory
-	* (b) call the script 'truncate_load_mds_export_pennsouth_resident.sh'
-	* (c) rename the mds_export.csv script in the source directory so that only newly ftp'd versions of the script will be run once the current run is complete
+* (a) copy the mds_export.csv from the source location noted above to the pennsouth_db_prep/data directory	
+* (b) call the script 'truncate_load_mds_export_pennsouth_resident.sh'
+* (c) rename the mds_export.csv script in the source directory so that only newly ftp'd versions of the script will be run once the current run is complete
 	
 	
 ### Description of script: truncate_load_mds_export_pennsouth_resident.sh
