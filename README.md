@@ -14,7 +14,7 @@ Flow of data:
 * (c) rename the mds_export.csv script in the source directory so that only newly ftp'd versions of the script will be run once the current run is complete
 	
 	
-### Description of script: truncate_load_mds_export_pennsouth_resident.sh
+### **Description of script: truncate_load_mds_export_pennsouth_resident.sh**
 
 The shell script 'truncate_load_mds_export_pennsouth_resident.sh' does the following:
 
