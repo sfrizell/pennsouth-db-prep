@@ -19,7 +19,7 @@ Flow of data:
 The shell script 'truncate_load_mds_export_pennsouth_resident.sh' does the following:
 
 * Truncates and loads the mds_export MySQL table from the MDS Export file ftp'd nightly to the server by MDS.
-* Truncates the pennsouth_resident table and uses the mds_export table as input to re-populates pennsouth_resident from mds_export. The following transformations are performed on the mds_export data when loading to pennsouth_resident:
+* Truncates the pennsouth_resident table and uses the mds_export table as input to re-populate pennsouth_resident from mds_export. The following transformations are performed on the mds_export data when loading to pennsouth_resident:
  
     * wherever multiple email addresses are listed (separated by semi-colons) in the mds_export.email_address column for a resident, create a separate row in the pennsouth_resident table for each email_address.
     * populate the pennsouth_resident.vehicle_reg_exp_countdown column by calculating the number of days between the mds_export.vehicle_reg_exp_date (vehichle registration expiration date) and the current date. If the registration is expired, store as a negative number the days since expiration.
