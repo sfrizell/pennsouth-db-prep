@@ -14,7 +14,8 @@
 #   Note: to grant all privileges to a user: 
 #			mysql> GRANT ALL PRIVILEGES ON database_name.* TO 'username'@'localhost';
 #   12/30/2016 - modified to populate new columns (a) vehicle_reg_interval_remaining
-#	(b) homeowner_ins_interval_remaining 
+#	(b) homeowner_ins_interval_remaining
+#   1/9/2017 - remove office_telephone column from mds_export and pennsouth_resident
 #   prod environment:
 #     mysql --defaults-file=/home/pennsouthdata/.my.cnf  -D pennsout_db -h 127.0.0.1 <<STOP
 #   dev environment:
@@ -41,7 +42,7 @@ IGNORE 1 LINES
     @Homeowner_Insurance_Exp_Date, Storage_Locker_Closet_Bldg_Num, @Storage_Locker_Num,
     @Storage_Closet_Floor_Num, Dog_Tag_Num, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     vehicle_model, vehicle_license_plate_num,
-    @Office_Phone, Status_Codes, Standard_Lockbox_Tenant_Id, @move_in_date,
+     Status_Codes, Standard_Lockbox_Tenant_Id, @move_in_date,
      @Toddler_Room_Member, @Youth_Room_Member, 
     @Ceramics_Member, @Garden_Member, @Woodworking_Member, @Gym_Member, @Floor_Number, @Apt_Line)
   set 
@@ -56,7 +57,6 @@ IGNORE 1 LINES
    Homeowner_Insurance_Exp_Date = if (length(trim(@Homeowner_Insurance_Exp_Date)) = 0, NULL, STR_TO_DATE(@Homeowner_Insurance_Exp_Date, '%m/%d/%Y')),
    Storage_Locker_Num = if(length(trim(@Storage_Locker_Num)) = 0, NULL, replace(@Storage_Locker_Num, '.00', '')),
    Storage_Closet_Floor_Num = if(length(trim(@Storage_Closet_Floor_Num)) = 0, NULL, replace(@Storage_Closet_Floor_Num, '.00', '')),
-   Office_Phone = if(LENGTH(@Office_Phone) < 10, NULL, REPLACE(@Office_Phone, ' ', '')),
    Last_Changed_Date = CURRENT_TIMESTAMP(),
    Toddler_Room_Member = if (Instr(Status_Codes, '7') > 0, 'Y', NULL),
    Youth_Room_Member = if (Instr(Status_Codes, 'k') > 0, 'Y', NULL),
@@ -91,7 +91,7 @@ truncate table pennsouth_resident;
 -- insert into pennsouth_resident where there is no more than 1 email address defined for the resident in the MDS_Export table
 insert ignore into pennsouth_resident
 (pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone, 
-	fax, office_phone, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
+	fax,  Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, Storage_Locker_Closet_Bldg_Num,
@@ -102,7 +102,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if(me.email_address is null, '', trim(me.email_address)), 
     if(me.Category is null, '', trim(me.Category)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
 	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
-    if(me.office_phone is null, '', trim(me.office_phone)), if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)), 
+    if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
     if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
     if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)), 
     if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num), 
@@ -153,7 +153,7 @@ and LOCATE(';', EMAIL_ADDRESS) = 0;
 -- insert into pennsouth_resident where Mds_export.email_address has 2 email addresses. Insert the 1st email address, located before the semi-colon
 insert ignore into pennsouth_resident
 (pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone, 
-	fax, office_phone, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
+	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, Storage_Locker_Closet_Bldg_Num,
@@ -164,7 +164,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 	trim(SUBSTR(me.email_address, 1, (LOCATE(';', me.EMAIL_ADDRESS))-1)) email_address, 
     if(me.Category is null, '', trim(me.Category)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
 	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
-    if(me.office_phone is null, '', trim(me.office_phone)), if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)), 
+    if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
     if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
     if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)), 
     if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num), 
@@ -214,7 +214,7 @@ and LOCATE(';', me.EMAIL_ADDRESS) > 0;
 -- SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+1) email_address,
 insert ignore into pennsouth_resident
 (pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone, 
-	fax, office_phone, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
+	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, Storage_Locker_Closet_Bldg_Num,
@@ -225,7 +225,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 	trim(SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+1)) email_address,
     if(me.Category is null, '', trim(me.Category)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
 	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
-    if(me.office_phone is null, '', trim(me.office_phone)), if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)), 
+    if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
     if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
     if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)), 
     if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num), 
@@ -274,7 +274,7 @@ and LOCATE(';', me.EMAIL_ADDRESS) > 0;
 -- SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+1) email_address,
 insert ignore into pennsouth_resident
 (pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone, 
-	fax, office_phone, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
+	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, Storage_Locker_Closet_Bldg_Num,
@@ -285,7 +285,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 	trim(SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+2)) email_address,
     if(me.Category is null, '', trim(me.Category)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
 	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
-    if(me.office_phone is null, '', trim(me.office_phone)), if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)), 
+    if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
     if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
     if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)), 
     if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num), 
@@ -334,7 +334,7 @@ and LOCATE(';', me.EMAIL_ADDRESS) > 0 and (length(me.email_address)-length(repla
 -- NULL email_address,
 insert ignore into pennsouth_resident
 (pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone, 
-	fax, office_phone, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
+	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, Storage_Locker_Closet_Bldg_Num,
@@ -345,7 +345,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 	'' email_address,
     if(me.Category is null, '', trim(me.Category)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
 	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
-    if(me.office_phone is null, '', trim(me.office_phone)), if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)), 
+    if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
     if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
     if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)), 
     if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num), 
