@@ -270,8 +270,8 @@ and apt.apt_line	= me.apt_line
 and LOCATE(';', me.EMAIL_ADDRESS) > 0;
 
 -- 4
--- insert into pennsouth_resident where Mds_export.email_address has 2 email addresses. Insert the 2nd email address, located after the semi-colon
--- SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+1) email_address,
+-- insert into pennsouth_resident where Mds_export.email_address has 3 email addresses. Insert the 3nd email address, located after the semi-colon
+-- SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+2) email_address,
 insert ignore into pennsouth_resident
 (pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone, 
 	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
