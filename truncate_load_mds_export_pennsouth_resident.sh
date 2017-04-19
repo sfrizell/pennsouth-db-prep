@@ -16,11 +16,13 @@
 #   12/30/2016 - modified to populate new columns (a) vehicle_reg_interval_remaining
 #	(b) homeowner_ins_interval_remaining
 #   1/9/2017 - remove office_telephone column from mds_export and pennsouth_resident
+#   4/19/2017 - Change countdown expiration interval of 11 - 21 to 11 - 24 for homeowners insurance and
+#        vehicle registration
+
 #   prod environment:
 #     mysql --defaults-file=/home/pennsouthdata/.my.cnf  -D pennsout_db -h 127.0.0.1 <<STOP
 #   dev environment:
 #     mysql --defaults-file=/Users/sfrizell/.my.cnf -D pennsouth_db -h 127.0.0.1 <<STOP
-
 
 mysql --defaults-file=/Users/sfrizell/.my.cnf -D pennsouth_db -h 127.0.0.1 <<STOP
 
@@ -117,7 +119,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 21 = 1 then 21
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
     if(me.vehicle_model is null, '', trim(me.vehicle_model)), 
@@ -127,7 +129,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 21 = 1 then 21
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date, 
@@ -179,7 +181,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 21 = 1 then 21
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
     if(me.vehicle_model is null, '', trim(me.vehicle_model)), 
@@ -189,7 +191,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 21 = 1 then 21
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date, 
@@ -240,7 +242,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 21 = 1 then 21
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
     if(me.vehicle_model is null, '', trim(me.vehicle_model)), 
@@ -250,7 +252,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 21 = 1 then 21
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date, 
@@ -300,7 +302,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 21 = 1 then 21
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
     if(me.vehicle_model is null, '', trim(me.vehicle_model)), 
@@ -310,7 +312,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 21 = 1 then 21
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date, 
@@ -360,7 +362,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 21 = 1 then 21
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
     if(me.vehicle_model is null, '', trim(me.vehicle_model)), 
@@ -370,7 +372,7 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 21 = 1 then 21
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date, 
