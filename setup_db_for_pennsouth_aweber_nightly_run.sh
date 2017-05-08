@@ -13,6 +13,8 @@
 #	(4) The Mds/Aweber update program can check the status of the job as recorded in step 
 #		(3) above and exit if this load has failed. 
 #
+#   - Invoke this script via following command to pipe output to a log file:
+#         ./setup_db_for_pennsouth_aweber_nightly_run.sh > output_truncate_load.log
 
 MDS_FTP_DIRECTORY=/home/mds/public_ftp
 MDS_EXPORT_FILE_SOURCE=${MDS_FTP_DIRECTORY}/mds_export.csv
