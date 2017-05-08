@@ -39,12 +39,14 @@ COLUMNS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"'
 ESCAPED BY '"'
 IGNORE 1 LINES
-( Building, MDS_Apt, First_Name, Last_Name, Email_Address, @Category, @Daytime_Phone, @Evening_Phone,
+( Building, MDS_Apt, First_Name, Last_Name, Email_Address, Category, @Daytime_Phone, @Evening_Phone,
 	@Cell_Phone, @Fax, Tenant_Id, Person_Id,@Date_of_Birth, @Decal_Num, @Vehicle_Reg_Exp_Date,
     @Homeowner_Insurance_Exp_Date, Storage_Locker_Closet_Bldg_Num, @Storage_Locker_Num,
     @Storage_Closet_Floor_Num, Dog_Tag_Num, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     vehicle_model, vehicle_license_plate_num,
      Status_Codes, Standard_Lockbox_Tenant_Id, @move_in_date,
+     shareholder_flag, @inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy,
+     @apt_surrendered,
      @Toddler_Room_Member, @Youth_Room_Member, 
     @Ceramics_Member, @Garden_Member, @Woodworking_Member, @Gym_Member, @Floor_Number, @Apt_Line)
   set 
@@ -60,13 +62,24 @@ IGNORE 1 LINES
    Storage_Locker_Num = if(length(trim(@Storage_Locker_Num)) = 0, NULL, replace(@Storage_Locker_Num, '.00', '')),
    Storage_Closet_Floor_Num = if(length(trim(@Storage_Closet_Floor_Num)) = 0, NULL, replace(@Storage_Closet_Floor_Num, '.00', '')),
    Last_Changed_Date = CURRENT_TIMESTAMP(),
+   inc_affidavit_receipt_date = if (length(trim(@inc_affidavit_receipt_date)) = 0, NULL, STR_TO_DATE(@inc_affidavit_receipt_date, '%m/%d/%Y')),
+   apt_surrendered = (CASE
+        WHEN ( (INSTR(status_codes, 'M') > 0) and (INSTR(status_codes, '=') > 0) and (INSTR(status_codes, '*') > 0)) THEN 'Moved; Internal Move; External Move'
+        WHEN ( (INSTR(status_codes, 'M') > 0) and (INSTR(status_codes, '=') > 0) ) THEN 'Moved; Internal Move'
+        WHEN ( (INSTR(status_codes, 'M') > 0) and (INSTR(status_codes, '*') > 0) ) THEN 'Moved; External Move'
+        WHEN ( (INSTR(status_codes, 'M') > 0) ) THEN 'Moved'
+        WHEN ( (INSTR(status_codes, '=') > 0) ) THEN 'Internal Move'
+        WHEN ( (INSTR(status_codes, '*') > 0) ) THEN 'External Move'
+        ELSE  ''
+   END),
    Toddler_Room_Member = if (Instr(Status_Codes, '7') > 0, 'Y', NULL),
    Youth_Room_Member = if (Instr(Status_Codes, 'k') > 0, 'Y', NULL),
-   Ceramics_Member = if (Instr(@Category, 'CERAMICS_FULL_MBR') > 0, 'Y', NULL),
-   Garden_Member = if (Instr(@Category, 'GARDEN_MBR') > 0, 'Y', NULL),
-   Woodworking_Member = if (Instr(@Category, 'WOODWORKING_MBR') > 0, 'Y', NULL),
-   Gym_Member = if (Instr(@Category, 'GYM_MBR') > 0, 'Y', NULL), 
-   Category = if (Instr(@Category, 'SHAREHOLDER') > 0, 'SHAREHOLDER', if (Instr(@Category, 'DECEASED') > 0, 'DECEASED', if (length(trim(@Category)) = 0, NULL, 'OCCUPANT'))),
+   Ceramics_Member = if (Instr(Category, 'CERAMICS_FULL_MBR') > 0, 'Y', NULL),
+   Garden_Member = if (Instr(Category, 'GARDEN_MBR') > 0, 'Y', NULL),
+   Woodworking_Member = if (Instr(Category, 'WOODWORKING_MBR') > 0, 'Y', NULL),
+   Gym_Member = if (Instr(Category, 'GYM_MBR') > 0, 'Y', NULL), 
+   category_interpreted = if (Instr(Category, 'SHAREHOLDER') > 0, 'SHAREHOLDER', if (Instr(Category, 'DECEASED') > 0, 'DECEASED', if (length(trim(Category)) = 0, '', 
+   if (Instr(Category, 'NON-RES') > 0, 'NONRESIDENT', 'OCCUPANT')))),
    Floor_Number = if (LENGTH(MDS_Apt) = 2, substr(MDS_Apt, 1, 1), substr(MDS_Apt, 1, 2) ),
    Apt_Line = if (LENGTH(MDS_Apt) = 2, substr(MDS_Apt, 2, 1), substr(MDS_Apt, 3, 1) );
 
@@ -85,6 +98,8 @@ IGNORE 1 LINES
             3) insert all rows from mds_export table that has a value in the email_address column and there is more than one email address in the column - get the first email address
             4) insert all rows from mds_export table that has a value in the email_address column and there is more than one email address in the column - get the first email address
             5) insert all rows from mds_export table where the mds_export.email_address column is null.
+    5/2/2017: 
+       - Updated to include new pennsouth_resident columns for income affidavit, etc.
 **/
 
 truncate table pennsouth_resident;
@@ -96,13 +111,15 @@ insert ignore into pennsouth_resident
 	fax,  Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
-    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, Storage_Locker_Closet_Bldg_Num,
+    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, 
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered,
+    Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
 select  apt.apartment_id, me.building,  me.floor_number, me.apt_line, 
 	if(me.last_name is null, '', trim(me.last_name)), if(me.first_name is null, '', trim(me.first_name)), 
     if(me.email_address is null, '', trim(me.email_address)), 
-    if(me.Category is null, '', trim(me.Category)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
+    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
 	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
     if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
     if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
@@ -132,7 +149,8 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
-    me.Date_Of_Birth, me.Move_In_Date, 
+    me.Date_Of_Birth, me.Move_In_Date, me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
+    me.apt_surrendered,
     if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)), 
     if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)), 
     if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)), 
@@ -158,13 +176,14 @@ insert ignore into pennsouth_resident
 	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
-    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, Storage_Locker_Closet_Bldg_Num,
+    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, 
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered,Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
 select  apt.apartment_id, me.building,  me.floor_number, me.apt_line, 
 	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name), 
 	trim(SUBSTR(me.email_address, 1, (LOCATE(';', me.EMAIL_ADDRESS))-1)) email_address, 
-    if(me.Category is null, '', trim(me.Category)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
+    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
 	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
     if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
     if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
@@ -194,7 +213,8 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
-    me.Date_Of_Birth, me.Move_In_Date, 
+    me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
+    me.apt_surrendered,
     if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)), 
     if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)), 
     if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)), 
@@ -219,13 +239,14 @@ insert ignore into pennsouth_resident
 	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
-    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, Storage_Locker_Closet_Bldg_Num,
+    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, 
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
 select  apt.apartment_id, me.building,  me.floor_number, me.apt_line, 
 	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name), 
 	trim(SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+1)) email_address,
-    if(me.Category is null, '', trim(me.Category)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
+    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
 	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
     if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
     if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
@@ -255,7 +276,8 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
-    me.Date_Of_Birth, me.Move_In_Date, 
+    me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
+    me.apt_surrendered,
     if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)), 
     if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)), 
     if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)), 
@@ -279,13 +301,14 @@ insert ignore into pennsouth_resident
 	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
-    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, Storage_Locker_Closet_Bldg_Num,
+    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, 
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
 select  apt.apartment_id, me.building,  me.floor_number, me.apt_line, 
 	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name), 
 	trim(SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+2)) email_address,
-    if(me.Category is null, '', trim(me.Category)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
+    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
 	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
     if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
     if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
@@ -315,7 +338,8 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
-    me.Date_Of_Birth, me.Move_In_Date, 
+    me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
+    me.apt_surrendered,
     if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)), 
     if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)), 
     if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)), 
@@ -339,13 +363,14 @@ insert ignore into pennsouth_resident
 	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
-    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, Storage_Locker_Closet_Bldg_Num,
+    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, 
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
 select  apt.apartment_id, me.building,  me.floor_number, me.apt_line, 
 	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name), 
 	'' email_address,
-    if(me.Category is null, '', trim(me.Category)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
+    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
 	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
     if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
     if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
@@ -375,7 +400,8 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
-    me.Date_Of_Birth, me.Move_In_Date, 
+    me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
+    me.apt_surrendered,
     if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)), 
     if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)), 
     if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)), 
