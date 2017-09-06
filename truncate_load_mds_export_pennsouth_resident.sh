@@ -24,7 +24,7 @@
 #   dev environment:
 #     mysql --defaults-file=/Users/sfrizell/.my.cnf -D pennsouth_db -h 127.0.0.1 <<STOP
 
-mysql --defaults-file=/Users/sfrizell/.my.cnf -D pennsouth_db -h 127.0.0.1 <<STOP
+mysql --defaults-file=/home/pennsouthdata/.my.cnf  -D pennsout_db -h 127.0.0.1 <<STOP
 
 --  maintain audit trail of time script takes to run...
 SET @start=UNIX_TIMESTAMP();
@@ -64,14 +64,14 @@ IGNORE 1 LINES
    Last_Changed_Date = CURRENT_TIMESTAMP(),
    inc_affidavit_receipt_date = if (length(trim(@inc_affidavit_receipt_date)) = 0, NULL, STR_TO_DATE(@inc_affidavit_receipt_date, '%m/%d/%Y')),
    apt_surrendered = (CASE
-        WHEN ( (INSTR(status_codes, 'M') > 0) and (INSTR(status_codes, '=') > 0) and (INSTR(status_codes, '*') > 0)) THEN 'Moved; Internal Move; External Move'
-        WHEN ( (INSTR(status_codes, 'M') > 0) and (INSTR(status_codes, '=') > 0) ) THEN 'Moved; Internal Move'
-        WHEN ( (INSTR(status_codes, 'M') > 0) and (INSTR(status_codes, '*') > 0) ) THEN 'Moved; External Move'
-        WHEN ( (INSTR(status_codes, 'M') > 0) ) THEN 'Moved'
-        WHEN ( (INSTR(status_codes, '=') > 0) ) THEN 'Internal Move'
-        WHEN ( (INSTR(status_codes, '*') > 0) ) THEN 'External Move'
-        ELSE  ''
-   END),
+           WHEN ( (INSTR(binary status_codes, 'M') > 0) and (binary INSTR(status_codes, '&') > 0) and (binary INSTR(status_codes, '*') > 0)) THEN 'Moved; Internal Move; External Move'
+           WHEN ( (INSTR(binary status_codes, 'M') > 0) and (binary INSTR(status_codes, '&') > 0) ) THEN 'Moved; Internal Move'
+           WHEN ( (INSTR(binary status_codes, 'M') > 0) and (binary INSTR(status_codes, '*') > 0) ) THEN 'Moved; External Move'
+           WHEN ( (INSTR(binary status_codes, 'M') > 0) ) THEN 'Moved'
+           WHEN ( (INSTR(binary status_codes, '&') > 0) ) THEN 'Internal Move'
+           WHEN ( (INSTR(binary status_codes, '*') > 0) ) THEN 'External Move'
+           ELSE  ''
+      END),
    Toddler_Room_Member = if (Instr(Status_Codes, '7') > 0, 'Y', NULL),
    Youth_Room_Member = if (Instr(Status_Codes, 'k') > 0, 'Y', NULL),
    Ceramics_Member = if (Instr(Category, 'CERAMICS_FULL_MBR') > 0, 'Y', NULL),
@@ -112,37 +112,37 @@ insert ignore into pennsouth_resident
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, 
-    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered,
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id,
     Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
-select  apt.apartment_id, me.building,  me.floor_number, me.apt_line, 
-	if(me.last_name is null, '', trim(me.last_name)), if(me.first_name is null, '', trim(me.first_name)), 
-    if(me.email_address is null, '', trim(me.email_address)), 
-    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
-	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
+select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
+	if(me.last_name is null, '', trim(me.last_name)), if(me.first_name is null, '', trim(me.first_name)),
+    if(me.email_address is null, '', trim(me.email_address)),
+    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)),
+	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)),
     if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
-    if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
-    if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)), 
-    if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num), 
-    CASE 
+    if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)),
+    if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)),
+    if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num),
+    CASE
 		WHEN length(trim(me.Decal_Num)) = 0 then ''
         WHEN me.Decal_Num > 0 and me.Decal_Num < 300 then 'LOWER'
         WHEN me.Decal_Num > 299 then 'UPPER'
         ELSE ''
-    END, 
+    END,
     me.Vehicle_Reg_Exp_Date, if (me.Vehicle_Reg_Exp_Date is null, null, DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate())),
-    if (me.Vehicle_Reg_Exp_Date is null, null,  
+    if (me.Vehicle_Reg_Exp_Date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
-    if(me.vehicle_model is null, '', trim(me.vehicle_model)), 
+    if(me.vehicle_model is null, '', trim(me.vehicle_model)),
     if(me.vehicle_license_plate_num is null, '', trim(me.vehicle_license_plate_num)),
     me.Homeowner_Insurance_Exp_Date, if (me.Homeowner_Insurance_Exp_Date is null, NULL, DATEDIFF(me.Homeowner_Insurance_Exp_Date, CurDate())),
-    if (me.homeowner_insurance_exp_date is null, null,  
+    if (me.homeowner_insurance_exp_date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
@@ -150,14 +150,14 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date, me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
-    me.apt_surrendered,
-    if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)), 
-    if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)), 
-    if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)), 
-    if(length(trim(me.Dog_Tag_Num)) = 0, '', 'Y'), if(me.Bike_Rack_Location is null, '', trim(me.Bike_Rack_Location)), 
+    me.apt_surrendered, me.mds_export_id,
+    if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
+    if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
+    if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
+    if(length(trim(me.Dog_Tag_Num)) = 0, '', 'Y'), if(me.Bike_Rack_Location is null, '', trim(me.Bike_Rack_Location)),
     if(me.Bike_Rack_Bldg is null, '', trim(me.Bike_Rack_Bldg)), if(me.Bike_Rack_Room is null, '', trim(me.Bike_Rack_Room)),
      sysdate()
-from 
+from
 	 pennsouth_apt as apt
      inner join mds_export as me
 where
@@ -172,41 +172,42 @@ and LOCATE(';', EMAIL_ADDRESS) = 0;
 -- 2
 -- insert into pennsouth_resident where Mds_export.email_address has 2 email addresses. Insert the 1st email address, located before the semi-colon
 insert ignore into pennsouth_resident
-(pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone, 
+(pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone,
 	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
-    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, 
-    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered,Storage_Locker_Closet_Bldg_Num,
+    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date,
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id,
+    Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
-select  apt.apartment_id, me.building,  me.floor_number, me.apt_line, 
-	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name), 
-	trim(SUBSTR(me.email_address, 1, (LOCATE(';', me.EMAIL_ADDRESS))-1)) email_address, 
-    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
-	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
+select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
+	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name),
+	trim(SUBSTR(me.email_address, 1, (LOCATE(';', me.EMAIL_ADDRESS))-1)) email_address,
+    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)),
+	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)),
     if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
-    if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
-    if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)), 
-    if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num), 
-    CASE 
+    if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)),
+    if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)),
+    if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num),
+    CASE
 		WHEN length(trim(me.Decal_Num)) = 0 then ''
         WHEN me.Decal_Num > 0 and me.Decal_Num < 300 then 'LOWER'
         WHEN me.Decal_Num > 299 then 'UPPER'
         ELSE ''
-    END, 
+    END,
 	me.Vehicle_Reg_Exp_Date, if (me.Vehicle_Reg_Exp_Date is null, null, DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate())),
-    if (me.Vehicle_Reg_Exp_Date is null, null,  
+    if (me.Vehicle_Reg_Exp_Date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
-    if(me.vehicle_model is null, '', trim(me.vehicle_model)), 
+    if(me.vehicle_model is null, '', trim(me.vehicle_model)),
     if(me.vehicle_license_plate_num is null, '', trim(me.vehicle_license_plate_num)),
     me.Homeowner_Insurance_Exp_Date, if (me.Homeowner_Insurance_Exp_Date is null, NULL, DATEDIFF(me.Homeowner_Insurance_Exp_Date, CurDate())),
-    if (me.homeowner_insurance_exp_date is null, null,  
+    if (me.homeowner_insurance_exp_date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
@@ -214,62 +215,63 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
-    me.apt_surrendered,
-    if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)), 
-    if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)), 
-    if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)), 
-    if(length(trim(me.Dog_Tag_Num)) = 0, '', 'Y'), if(me.Bike_Rack_Location is null, '', trim(me.Bike_Rack_Location)), 
+    me.apt_surrendered, me.mds_export_id,
+    if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
+    if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
+    if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
+    if(length(trim(me.Dog_Tag_Num)) = 0, '', 'Y'), if(me.Bike_Rack_Location is null, '', trim(me.Bike_Rack_Location)),
     if(me.Bike_Rack_Bldg is null, '', trim(me.Bike_Rack_Bldg)), if(me.Bike_Rack_Room is null, '', trim(me.Bike_Rack_Room)),
      sysdate()
-from 
+from
 	 pennsouth_apt as apt
      inner join mds_export as me
 where
 	apt.building_id = me.building
 and apt.floor_number = me.floor_number
 and apt.apt_line	= me.apt_line
-and LOCATE(';', me.EMAIL_ADDRESS) > 0;
+and length(trim(trailing ';' from me.email_address)) - length (replace(me.email_address, ';', ''))  = 1;
 
 
 -- 3
 -- insert into pennsouth_resident where Mds_export.email_address has 2 email addresses. Insert the 2nd email address, located after the semi-colon
 -- SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+1) email_address,
 insert ignore into pennsouth_resident
-(pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone, 
+(pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone,
 	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
-    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, 
-    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, Storage_Locker_Closet_Bldg_Num,
+    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date,
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id,
+    Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
-select  apt.apartment_id, me.building,  me.floor_number, me.apt_line, 
-	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name), 
-	trim(SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+1)) email_address,
-    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
-	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
+select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
+	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name),
+	trim(trim(trailing ';' from SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+1))) email_address,
+    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)),
+	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)),
     if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
-    if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
-    if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)), 
-    if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num), 
-    CASE 
+    if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)),
+    if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)),
+    if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num),
+    CASE
 		WHEN length(trim(me.Decal_Num)) = 0 then ''
         WHEN me.Decal_Num > 0 and me.Decal_Num < 300 then 'LOWER'
         WHEN me.Decal_Num > 299 then 'UPPER'
         ELSE ''
-    END, 
+    END,
     me.Vehicle_Reg_Exp_Date, if (me.Vehicle_Reg_Exp_Date is null, null, DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate())),
-	if (me.Vehicle_Reg_Exp_Date is null, null,  
+	if (me.Vehicle_Reg_Exp_Date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
-    if(me.vehicle_model is null, '', trim(me.vehicle_model)), 
+    if(me.vehicle_model is null, '', trim(me.vehicle_model)),
     if(me.vehicle_license_plate_num is null, '', trim(me.vehicle_license_plate_num)),
     me.Homeowner_Insurance_Exp_Date, if (me.Homeowner_Insurance_Exp_Date is null, NULL, DATEDIFF(me.Homeowner_Insurance_Exp_Date, CurDate())),
-    if (me.homeowner_insurance_exp_date is null, null,  
+    if (me.homeowner_insurance_exp_date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
@@ -277,61 +279,61 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
-    me.apt_surrendered,
-    if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)), 
-    if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)), 
-    if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)), 
-    if(length(trim(me.Dog_Tag_Num)) = 0, '', 'Y'), if(me.Bike_Rack_Location is null, '', trim(me.Bike_Rack_Location)), 
+    me.apt_surrendered, me.mds_export_id,
+    if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
+    if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
+    if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
+    if(length(trim(me.Dog_Tag_Num)) = 0, '', 'Y'), if(me.Bike_Rack_Location is null, '', trim(me.Bike_Rack_Location)),
     if(me.Bike_Rack_Bldg is null, '', trim(me.Bike_Rack_Bldg)), if(me.Bike_Rack_Room is null, '', trim(me.Bike_Rack_Room)),
      sysdate()
-from 
+from
 	 pennsouth_apt as apt
      inner join mds_export as me
 where
 	apt.building_id = me.building
 and apt.floor_number = me.floor_number
 and apt.apt_line	= me.apt_line
-and LOCATE(';', me.EMAIL_ADDRESS) > 0;
+and length(trim(trailing ';' from me.email_address)) - length (replace(me.email_address, ';', ''))  = 1;
 
 -- 4
--- insert into pennsouth_resident where Mds_export.email_address has 3 email addresses. Insert the 3nd email address, located after the semi-colon
+-- insert into pennsouth_resident where Mds_export.email_address has 3 email addresses. Insert the 1st email address, located after the semi-colon
 -- SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+2) email_address,
 insert ignore into pennsouth_resident
-(pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone, 
+(pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone,
 	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
-    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, 
-    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, Storage_Locker_Closet_Bldg_Num,
+    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date,
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id, Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
-select  apt.apartment_id, me.building,  me.floor_number, me.apt_line, 
-	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name), 
-	trim(SUBSTR(me.email_address, (LOCATE(';', me.EMAIL_ADDRESS))+2)) email_address,
-    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
-	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
+select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
+	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name),
+	trim(SUBSTR(me.email_address, 1, (LOCATE(';', me.EMAIL_ADDRESS))-1)) email_address,
+    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)),
+	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)),
     if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
-    if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
-    if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)), 
-    if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num), 
-    CASE 
+    if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)),
+    if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)),
+    if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num),
+    CASE
 		WHEN length(trim(me.Decal_Num)) = 0 then ''
         WHEN me.Decal_Num > 0 and me.Decal_Num < 300 then 'LOWER'
         WHEN me.Decal_Num > 299 then 'UPPER'
         ELSE ''
-    END, 
+    END,
 	me.Vehicle_Reg_Exp_Date, if (me.Vehicle_Reg_Exp_Date is null, null, DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate())),
-    if (me.Vehicle_Reg_Exp_Date is null, null,  
+    if (me.Vehicle_Reg_Exp_Date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
-    if(me.vehicle_model is null, '', trim(me.vehicle_model)), 
+    if(me.vehicle_model is null, '', trim(me.vehicle_model)),
     if(me.vehicle_license_plate_num is null, '', trim(me.vehicle_license_plate_num)),
     me.Homeowner_Insurance_Exp_Date, if (me.Homeowner_Insurance_Exp_Date is null, NULL, DATEDIFF(me.Homeowner_Insurance_Exp_Date, CurDate())),
-    if (me.homeowner_insurance_exp_date is null, null,  
+    if (me.homeowner_insurance_exp_date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
@@ -339,61 +341,186 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
-    me.apt_surrendered,
-    if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)), 
-    if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)), 
-    if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)), 
-    if(length(trim(me.Dog_Tag_Num)) = 0, '', 'Y'), if(me.Bike_Rack_Location is null, '', trim(me.Bike_Rack_Location)), 
+    me.apt_surrendered, me.mds_export_id,
+    if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
+    if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
+    if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
+    if(length(trim(me.Dog_Tag_Num)) = 0, '', 'Y'), if(me.Bike_Rack_Location is null, '', trim(me.Bike_Rack_Location)),
     if(me.Bike_Rack_Bldg is null, '', trim(me.Bike_Rack_Bldg)), if(me.Bike_Rack_Room is null, '', trim(me.Bike_Rack_Room)),
      sysdate()
-from 
+from
 	 pennsouth_apt as apt
      inner join mds_export as me
 where
 	apt.building_id = me.building
 and apt.floor_number = me.floor_number
 and apt.apt_line	= me.apt_line
-and LOCATE(';', me.EMAIL_ADDRESS) > 0 and (length(me.email_address)-length(replace(me.email_address, ';','')))/1 > 1;
+and length(trim(trailing ';' from me.email_address)) - length (replace(me.email_address, ';', ''))  = 2;
 
 -- 5
+-- insert into pennsouth_resident where Mds_export.email_address has 3 email addresses. Insert the 2nd email address, located between the 2 semi-colons
+--
+insert ignore into pennsouth_resident
+(pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone,
+	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
+    Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
+    vehicle_model, vehicle_license_plate_num,
+    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date,
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id, Storage_Locker_Closet_Bldg_Num,
+    Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
+    last_changed_date)
+select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
+	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name),
+	trim(substring_index( substring_index(me.email_address, ';', -2  ), ';', 1)) email_address,
+    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)),
+	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)),
+    if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
+    if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)),
+    if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)),
+    if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num),
+    CASE
+		WHEN length(trim(me.Decal_Num)) = 0 then ''
+        WHEN me.Decal_Num > 0 and me.Decal_Num < 300 then 'LOWER'
+        WHEN me.Decal_Num > 299 then 'UPPER'
+        ELSE ''
+    END,
+	me.Vehicle_Reg_Exp_Date, if (me.Vehicle_Reg_Exp_Date is null, null, DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate())),
+    if (me.Vehicle_Reg_Exp_Date is null, null,
+		(CASE
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 ELSE null
+		END)),
+    if(me.vehicle_model is null, '', trim(me.vehicle_model)),
+    if(me.vehicle_license_plate_num is null, '', trim(me.vehicle_license_plate_num)),
+    me.Homeowner_Insurance_Exp_Date, if (me.Homeowner_Insurance_Exp_Date is null, NULL, DATEDIFF(me.Homeowner_Insurance_Exp_Date, CurDate())),
+    if (me.homeowner_insurance_exp_date is null, null,
+		(CASE
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 ELSE null
+		END)),
+    me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
+    me.apt_surrendered, me.mds_export_id,
+    if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
+    if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
+    if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
+    if(length(trim(me.Dog_Tag_Num)) = 0, '', 'Y'), if(me.Bike_Rack_Location is null, '', trim(me.Bike_Rack_Location)),
+    if(me.Bike_Rack_Bldg is null, '', trim(me.Bike_Rack_Bldg)), if(me.Bike_Rack_Room is null, '', trim(me.Bike_Rack_Room)),
+     sysdate()
+from
+	 pennsouth_apt as apt
+     inner join mds_export as me
+where
+	apt.building_id = me.building
+and apt.floor_number = me.floor_number
+and apt.apt_line	= me.apt_line
+and length(trim(trailing ';' from me.email_address)) - length (replace(me.email_address, ';', ''))  = 2;
+
+-- 6
+-- insert into pennsouth_resident where Mds_export.email_address has 3 email addresses. Insert the 3rd email address, located after the 2nd semi-colon
+--
+insert ignore into pennsouth_resident
+(pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone,
+	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
+    Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
+    vehicle_model, vehicle_license_plate_num,
+    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date,
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id, Storage_Locker_Closet_Bldg_Num,
+    Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
+    last_changed_date)
+select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
+	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name),
+	trim(substring_index(me.email_address, ';', -1  ))  email_address,
+    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)),
+	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)),
+    if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
+    if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)),
+    if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)),
+    if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num),
+    CASE
+		WHEN length(trim(me.Decal_Num)) = 0 then ''
+        WHEN me.Decal_Num > 0 and me.Decal_Num < 300 then 'LOWER'
+        WHEN me.Decal_Num > 299 then 'UPPER'
+        ELSE ''
+    END,
+	me.Vehicle_Reg_Exp_Date, if (me.Vehicle_Reg_Exp_Date is null, null, DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate())),
+    if (me.Vehicle_Reg_Exp_Date is null, null,
+		(CASE
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 ELSE null
+		END)),
+    if(me.vehicle_model is null, '', trim(me.vehicle_model)),
+    if(me.vehicle_license_plate_num is null, '', trim(me.vehicle_license_plate_num)),
+    me.Homeowner_Insurance_Exp_Date, if (me.Homeowner_Insurance_Exp_Date is null, NULL, DATEDIFF(me.Homeowner_Insurance_Exp_Date, CurDate())),
+    if (me.homeowner_insurance_exp_date is null, null,
+		(CASE
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 ELSE null
+		END)),
+    me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
+    me.apt_surrendered, me.mds_export_id,
+    if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
+    if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
+    if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
+    if(length(trim(me.Dog_Tag_Num)) = 0, '', 'Y'), if(me.Bike_Rack_Location is null, '', trim(me.Bike_Rack_Location)),
+    if(me.Bike_Rack_Bldg is null, '', trim(me.Bike_Rack_Bldg)), if(me.Bike_Rack_Room is null, '', trim(me.Bike_Rack_Room)),
+     sysdate()
+from
+	 pennsouth_apt as apt
+     inner join mds_export as me
+where
+	apt.building_id = me.building
+and apt.floor_number = me.floor_number
+and apt.apt_line	= me.apt_line
+and length(trim(trailing ';' from me.email_address)) - length (replace(me.email_address, ';', ''))  = 2;
+
+
+-- 7
 -- insert into pennsouth_resident where mds_export.email_address is null
 -- NULL email_address,
 insert ignore into pennsouth_resident
-(pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone, 
+(pennsouth_apt_apartment_id, building, floor_number, apt_line, last_name, first_name, email_address, MDS_Resident_Category, daytime_phone, evening_phone, cell_phone,
 	fax, Person_Id, Toddler_Room_Member, Youth_Room_Member, Ceramics_Member, Woodworking_Member,
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
-    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, 
-    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, Storage_Locker_Closet_Bldg_Num,
+    Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date,
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id, Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
-select  apt.apartment_id, me.building,  me.floor_number, me.apt_line, 
-	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name), 
+select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
+	if(me.last_name is null, '', me.last_name), if(me.first_name is null, '', me.first_name),
 	'' email_address,
-    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)), 
-	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)), 
+    if(me.Category_interpreted is null, '', trim(me.Category_interpreted)), if(me.daytime_phone is null, '', trim(me.daytime_phone)),
+	if(me.evening_phone is null, '', trim(me.evening_phone)), if(me.cell_phone is null, '', trim(me.cell_phone)), if(me.fax is null, '', trim(me.fax)),
     if(me.person_id is null, '', trim(me.person_id)), if(me.Toddler_Room_Member is null, '', trim(me.Toddler_Room_Member)),
-    if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)), 
-    if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)), 
-    if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num), 
-    CASE 
+    if(me.Youth_Room_Member is null, '', trim(me.Youth_Room_Member)), if(me.Ceramics_Member is null, '', trim(me.Ceramics_Member)),
+    if(me.Woodworking_Member is null, '', trim(me.Woodworking_Member)), if(me.Gym_Member is null, '', trim(me.Gym_Member)),
+    if(me.Garden_Member is null, '', trim(me.Garden_Member)), if (length(trim(me.Decal_Num)) = 0, NULL, me.Decal_Num),
+    CASE
 		WHEN length(trim(me.Decal_Num)) = 0 then ''
         WHEN me.Decal_Num > 0 and me.Decal_Num < 300 then 'LOWER'
         WHEN me.Decal_Num > 299 then 'UPPER'
         ELSE ''
-    END, 
+    END,
 	me.Vehicle_Reg_Exp_Date, if (me.Vehicle_Reg_Exp_Date is null, null, DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate())),
-    if (me.Vehicle_Reg_Exp_Date is null, null,  
+    if (me.Vehicle_Reg_Exp_Date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
 		 ELSE null
 		END)),
-    if(me.vehicle_model is null, '', trim(me.vehicle_model)), 
+    if(me.vehicle_model is null, '', trim(me.vehicle_model)),
     if(me.vehicle_license_plate_num is null, '', trim(me.vehicle_license_plate_num)),
     me.Homeowner_Insurance_Exp_Date, if (me.Homeowner_Insurance_Exp_Date is null, NULL, DATEDIFF(me.Homeowner_Insurance_Exp_Date, CurDate())),
-    if (me.homeowner_insurance_exp_date is null, null,  
+    if (me.homeowner_insurance_exp_date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
@@ -401,14 +528,14 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
-    me.apt_surrendered,
-    if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)), 
-    if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)), 
-    if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)), 
-    if(length(trim(me.Dog_Tag_Num)) = 0, '', 'Y'), if(me.Bike_Rack_Location is null, '', trim(me.Bike_Rack_Location)), 
+    me.apt_surrendered, me.mds_export_id,
+    if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
+    if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
+    if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
+    if(length(trim(me.Dog_Tag_Num)) = 0, '', 'Y'), if(me.Bike_Rack_Location is null, '', trim(me.Bike_Rack_Location)),
     if(me.Bike_Rack_Bldg is null, '', trim(me.Bike_Rack_Bldg)), if(me.Bike_Rack_Room is null, '', trim(me.Bike_Rack_Room)),
      sysdate()
-from 
+from
 	 pennsouth_apt as apt
      inner join mds_export as me
 where
@@ -416,7 +543,6 @@ where
 and apt.floor_number = me.floor_number
 and apt.apt_line	= me.apt_line
 and LENGTH(TRIM(me.EMAIL_ADDRESS)) = 0;
-
 
 
 --  display statistics on runtime of script...
