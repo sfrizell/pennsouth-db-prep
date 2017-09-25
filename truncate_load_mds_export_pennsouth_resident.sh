@@ -46,6 +46,7 @@ IGNORE 1 LINES
     vehicle_model, vehicle_license_plate_num,
      Status_Codes, Standard_Lockbox_Tenant_Id, @move_in_date,
      shareholder_flag, @inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy,
+     @vacate_date, hperson_id,
      @apt_surrendered,
      @Toddler_Room_Member, @Youth_Room_Member, 
     @Ceramics_Member, @Garden_Member, @Woodworking_Member, @Gym_Member, @Floor_Number, @Apt_Line)
@@ -113,7 +114,7 @@ insert ignore into pennsouth_resident
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date, 
     shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id,
-    Storage_Locker_Closet_Bldg_Num,
+    hperson_id, Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
 select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
@@ -135,8 +136,8 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.Vehicle_Reg_Exp_Date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     if(me.vehicle_model is null, '', trim(me.vehicle_model)),
@@ -145,12 +146,12 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.homeowner_insurance_exp_date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date, me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
-    me.apt_surrendered, me.mds_export_id,
+    me.apt_surrendered, me.mds_export_id, me.hperson_id,
     if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
     if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
     if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
@@ -178,7 +179,7 @@ insert ignore into pennsouth_resident
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date,
     shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id,
-    Storage_Locker_Closet_Bldg_Num,
+    hperson_id, Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
 select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
@@ -200,8 +201,8 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.Vehicle_Reg_Exp_Date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     if(me.vehicle_model is null, '', trim(me.vehicle_model)),
@@ -210,12 +211,12 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.homeowner_insurance_exp_date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
-    me.apt_surrendered, me.mds_export_id,
+    me.apt_surrendered, me.mds_export_id, me.hperson_id,
     if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
     if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
     if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
@@ -242,7 +243,7 @@ insert ignore into pennsouth_resident
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date,
     shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id,
-    Storage_Locker_Closet_Bldg_Num,
+    hperson_id, Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
 select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
@@ -264,8 +265,8 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
 	if (me.Vehicle_Reg_Exp_Date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     if(me.vehicle_model is null, '', trim(me.vehicle_model)),
@@ -274,12 +275,12 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.homeowner_insurance_exp_date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
-    me.apt_surrendered, me.mds_export_id,
+    me.apt_surrendered, me.mds_export_id, me.hperson_id,
     if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
     if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
     if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
@@ -304,7 +305,8 @@ insert ignore into pennsouth_resident
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date,
-    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id, Storage_Locker_Closet_Bldg_Num,
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id,
+    hperson_id, Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
 select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
@@ -326,8 +328,8 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.Vehicle_Reg_Exp_Date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     if(me.vehicle_model is null, '', trim(me.vehicle_model)),
@@ -336,12 +338,12 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.homeowner_insurance_exp_date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
-    me.apt_surrendered, me.mds_export_id,
+    me.apt_surrendered, me.mds_export_id, me.hperson_id,
     if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
     if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
     if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
@@ -366,7 +368,8 @@ insert ignore into pennsouth_resident
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date,
-    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id, Storage_Locker_Closet_Bldg_Num,
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id,
+    hperson_id, Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
 select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
@@ -388,8 +391,8 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.Vehicle_Reg_Exp_Date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     if(me.vehicle_model is null, '', trim(me.vehicle_model)),
@@ -398,12 +401,12 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.homeowner_insurance_exp_date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
-    me.apt_surrendered, me.mds_export_id,
+    me.apt_surrendered, me.mds_export_id, me.hperson_id,
     if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
     if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
     if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
@@ -428,7 +431,8 @@ insert ignore into pennsouth_resident
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date,
-    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id, Storage_Locker_Closet_Bldg_Num,
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id,
+    hperson_id, Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
 select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
@@ -450,8 +454,8 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.Vehicle_Reg_Exp_Date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     if(me.vehicle_model is null, '', trim(me.vehicle_model)),
@@ -460,12 +464,12 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.homeowner_insurance_exp_date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
-    me.apt_surrendered, me.mds_export_id,
+    me.apt_surrendered, me.mds_export_id, me.hperson_id,
     if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
     if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
     if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
@@ -491,7 +495,8 @@ insert ignore into pennsouth_resident
     Gym_Member, Garden_Member, Decal_Num, Parking_Lot_Location, Vehicle_Reg_Exp_Date, Vehicle_Reg_Exp_Countdown, vehicle_reg_interval_remaining,
     vehicle_model, vehicle_license_plate_num,
     Homeowner_Ins_Exp_Date, Homeowner_Ins_Exp_Countdown, homeowner_ins_interval_remaining, Birth_Date, Move_In_Date,
-    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id, Storage_Locker_Closet_Bldg_Num,
+    shareholder_flag, inc_affidavit_receipt_date, inc_affidavit_received, inc_affidavit_date_discrepancy, apt_surrendered, mds_export_id,
+    hperson_id, Storage_Locker_Closet_Bldg_Num,
     Storage_Locker_Num, Storage_Closet_Floor_Num, Dog_Tag_Num, Is_Dog_In_Apt, Bike_Rack_Location, Bike_Rack_Bldg, Bike_Rack_Room,
     last_changed_date)
 select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
@@ -513,8 +518,8 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.Vehicle_Reg_Exp_Date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.Vehicle_Reg_Exp_Date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     if(me.vehicle_model is null, '', trim(me.vehicle_model)),
@@ -523,12 +528,12 @@ select  apt.apartment_id, me.building,  me.floor_number, me.apt_line,
     if (me.homeowner_insurance_exp_date is null, null,
 		(CASE
 		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) < 1 then 0
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 10 = 1 then 10
-		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 11 AND 24 = 1 then 24
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 1 AND 14 = 1 then 14
+		 WHEN DATEDIFF(me.homeowner_insurance_exp_date, CurDate() ) BETWEEN 15 AND 28 = 1 then 28
 		 ELSE null
 		END)),
     me.Date_Of_Birth, me.Move_In_Date,  me.shareholder_flag, me.inc_affidavit_receipt_date, me.inc_affidavit_received, me.inc_affidavit_date_discrepancy,
-    me.apt_surrendered, me.mds_export_id,
+    me.apt_surrendered, me.mds_export_id, me.hperson_id,
     if(me.Storage_Locker_Closet_Bldg_Num is null, '', trim(me.Storage_Locker_Closet_Bldg_Num)),
     if(me.Storage_Locker_Num is null, '', trim(me.Storage_Locker_Num)) , if(me.Storage_Closet_Floor_Num is null, '', trim(me.Storage_Closet_Floor_Num)),
     if(me.Dog_Tag_Num is null, '', trim(me.Dog_Tag_Num)),
