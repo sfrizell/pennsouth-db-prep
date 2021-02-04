@@ -20,13 +20,14 @@
 #        vehicle registration
 #   2/1/2021 - update apt_surrendered to parse status_codes for code of 'x' = 'Estate - Vacant' & create nested Case statement in place of multiple and expressions
 #               - Code 'Estate - Vacant' should appear only when 'Moved' and 'External Move' are also coded, but allow for data entry error...
+#   2/4/2021 - update population of apt_surrendered in load of mds_export table; add binary option consistently to make INSTR comparison case sensitive!
 
 #   prod environment:
 #     mysql --defaults-file=/home/pennsouthdata/.my.cnf  -D pennsout_db -h 127.0.0.1 <<STOP
 #   dev environment:
 #     mysql --defaults-file=/Users/sfrizell/.my.cnf -D pennsout_db -h 127.0.0.1 <<STOP
 
- mysql --defaults-file=/home/pennsouthdata/.my.cnf  -D pennsout_db -h 127.0.0.1 <<STOP
+  mysql --defaults-file=/home/pennsouthdata/.my.cnf  -D pennsout_db -h 127.0.0.1 <<STOP
 
 --  maintain audit trail of time script takes to run...
 SET @start=UNIX_TIMESTAMP();
@@ -86,13 +87,13 @@ IGNORE 1 LINES
     		END)
     	ELSE
     		(CASE
-    			WHEN ( (INSTR(binary status_codes, '*') > 0) and (INSTR(status_codes, 'x') > 0 ))
+    			WHEN ( (INSTR(binary status_codes, '*') > 0) and (INSTR( binary status_codes, 'x') > 0 ))
     				THEN 'External Move; Estate - Vacant'
     			WHEN ( (INSTR(binary status_codes, '*') > 0) )
     				THEN 'External Move'
-    			WHEN ( (INSTR(status_codes, 'x') > 0) )
-    				THEN 'Estate Vacant'
-    			WHEN ( (INSTR(binary status_codes, '&') > 0) and (INSTR( status_codes, 'x') > 0 ))
+    			WHEN ( (INSTR(binary status_codes, 'x') > 0) )
+    				THEN 'Estate - Vacant'
+    			WHEN ( (INSTR(binary status_codes, '&') > 0) and (INSTR(binary status_codes, 'x') > 0 ))
     				THEN 'Internal Move; Estate - Vacant'
     			WHEN ( (INSTR(binary status_codes, '&') > 0) )
     				THEN 'Internal Move'
