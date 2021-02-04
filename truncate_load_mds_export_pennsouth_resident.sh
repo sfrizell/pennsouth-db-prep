@@ -18,13 +18,15 @@
 #   1/9/2017 - remove office_telephone column from mds_export and pennsouth_resident
 #   4/19/2017 - Change countdown expiration interval of 11 - 21 to 11 - 24 for homeowners insurance and
 #        vehicle registration
+#   2/1/2021 - update apt_surrendered to parse status_codes for code of 'x' = 'Estate - Vacant' & create nested Case statement in place of multiple and expressions
+#               - Code 'Estate - Vacant' should appear only when 'Moved' and 'External Move' are also coded, but allow for data entry error...
 
 #   prod environment:
 #     mysql --defaults-file=/home/pennsouthdata/.my.cnf  -D pennsout_db -h 127.0.0.1 <<STOP
 #   dev environment:
-#     mysql --defaults-file=/Users/sfrizell/.my.cnf -D pennsouth_db -h 127.0.0.1 <<STOP
+#     mysql --defaults-file=/Users/sfrizell/.my.cnf -D pennsout_db -h 127.0.0.1 <<STOP
 
-mysql --defaults-file=/home/pennsouthdata/.my.cnf  -D pennsout_db -h 127.0.0.1 <<STOP
+mysql --defaults-file=/Users/sfrizell/.my.cnf -D pennsout_db -h 127.0.0.1 <<STOP
 
 --  maintain audit trail of time script takes to run...
 SET @start=UNIX_TIMESTAMP();
@@ -64,15 +66,40 @@ IGNORE 1 LINES
    Storage_Closet_Floor_Num = if(length(trim(@Storage_Closet_Floor_Num)) = 0, NULL, replace(@Storage_Closet_Floor_Num, '.00', '')),
    Last_Changed_Date = CURRENT_TIMESTAMP(),
    inc_affidavit_receipt_date = if (length(trim(@inc_affidavit_receipt_date)) = 0, NULL, STR_TO_DATE(@inc_affidavit_receipt_date, '%m/%d/%Y')),
-   apt_surrendered = (CASE
-           WHEN ( (INSTR(binary status_codes, 'M') > 0) and (binary INSTR(status_codes, '&') > 0) and (binary INSTR(status_codes, '*') > 0)) THEN 'Moved; Internal Move; External Move'
-           WHEN ( (INSTR(binary status_codes, 'M') > 0) and (binary INSTR(status_codes, '&') > 0) ) THEN 'Moved; Internal Move'
-           WHEN ( (INSTR(binary status_codes, 'M') > 0) and (binary INSTR(status_codes, '*') > 0) ) THEN 'Moved; External Move'
-           WHEN ( (INSTR(binary status_codes, 'M') > 0) ) THEN 'Moved'
-           WHEN ( (INSTR(binary status_codes, '&') > 0) ) THEN 'Internal Move'
-           WHEN ( (INSTR(binary status_codes, '*') > 0) ) THEN 'External Move'
-           ELSE  ''
-      END),
+    apt_surrendered =
+    (CASE
+    	WHEN (INSTR(binary status_codes, 'M') > 0)
+    	THEN
+    		(CASE
+    			WHEN ( (INSTR(binary status_codes, '*') > 0) and  (INSTR(status_codes, 'x') > 0 ))
+    				THEN 'Moved; External Move; Estate - Vacant'
+    			WHEN ( (INSTR(binary status_codes, '*') > 0) )
+    				THEN 'Moved; External Move'
+    			WHEN ( (INSTR(binary status_codes, '&') > 0) and ( INSTR( status_codes, 'x') > 0 ))
+    				THEN 'Moved; Internal Move; Estate - Vacant'
+    			WHEN ( (INSTR(binary status_codes, 'x') > 0) )
+    				THEN 'Moved; Estate Vacant'
+    			WHEN ( (INSTR(binary status_codes, '&') > 0) )
+    				THEN 'Moved; Internal Move'
+    			ELSE
+    				'Moved'
+    		END)
+    	ELSE
+    		(CASE
+    			WHEN ( (INSTR(binary status_codes, '*') > 0) and (INSTR(status_codes, 'x') > 0 ))
+    				THEN 'External Move; Estate - Vacant'
+    			WHEN ( (INSTR(binary status_codes, '*') > 0) )
+    				THEN 'External Move'
+    			WHEN ( (INSTR(status_codes, 'x') > 0) )
+    				THEN 'Estate Vacant'
+    			WHEN ( (INSTR(binary status_codes, '&') > 0) and (INSTR( status_codes, 'x') > 0 ))
+    				THEN 'Internal Move; Estate - Vacant'
+    			WHEN ( (INSTR(binary status_codes, '&') > 0) )
+    				THEN 'Internal Move'
+    			ELSE
+    				''
+    		END)
+     END),
    Toddler_Room_Member = if (Instr(Status_Codes, '7') > 0, 'Y', NULL),
    Youth_Room_Member = if (Instr(Status_Codes, 'k') > 0, 'Y', NULL),
    Ceramics_Member = if (Instr(Category, 'CERAMICS_FULL_MBR') > 0, 'Y', NULL),
@@ -83,6 +110,8 @@ IGNORE 1 LINES
    if (Instr(Category, 'NON-RES') > 0, 'NONRESIDENT', 'OCCUPANT')))),
    Floor_Number = if (LENGTH(MDS_Apt) = 2, substr(MDS_Apt, 1, 1), substr(MDS_Apt, 1, 2) ),
    Apt_Line = if (LENGTH(MDS_Apt) = 2, substr(MDS_Apt, 2, 1), substr(MDS_Apt, 3, 1) );
+
+
 
 --  Truncate and load pennsouth_resident table...
 
