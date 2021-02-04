@@ -26,7 +26,7 @@
 #   dev environment:
 #     mysql --defaults-file=/Users/sfrizell/.my.cnf -D pennsout_db -h 127.0.0.1 <<STOP
 
-mysql --defaults-file=/Users/sfrizell/.my.cnf -D pennsout_db -h 127.0.0.1 <<STOP
+ mysql --defaults-file=/home/pennsouthdata/.my.cnf  -D pennsout_db -h 127.0.0.1 <<STOP
 
 --  maintain audit trail of time script takes to run...
 SET @start=UNIX_TIMESTAMP();
